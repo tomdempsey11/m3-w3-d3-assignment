@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Pacmen</title>
+  <!-- DO NOT CHANGE THIS LINE OF CODE -->
+  <script src="pacmen.js"></script>
+  <style>
+    /* Optional: makes the play area visible and sized */
+    #game {
+      position: relative;
+      width: 100%;
+      height: 80vh;
+      border: 2px solid #ccc;
+      overflow: hidden; /* keep pacmen inside */
+    }
+    #controls {
+      margin: 12px 0;
+      display: flex;
+      gap: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <button id="addBtn" onclick="makeOne()" width="200" height="30">Add PacMan</button>
+    <button id="startBtn" onclick="update()" width="200" height="30">Start Game</button>
+  </div>
+
+  <div id="game"></div>
+</body>
+</html>
