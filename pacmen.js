@@ -2,35 +2,42 @@ const pacMen = []; // This array holds all the pacmen
 
 // Returns a random point with values scaled by `scale`
 function setToRandom(scale) {
-  return {
-    x: Math.random() * scale,
-    y: Math.random() * scale,
-  };
+  return { x: Math.random() * scale, y: Math.random() * scale };
 }
+
+// (Optional) Preload images for smoother swaps
+const SPRITES = {
+  right: ['./images/PacMan1.png', './images/PacMan2.png'], // open, closed
+  left:  ['./images/PacMan3.png', './images/PacMan4.png'], // open, closed
+};
+Object.values(SPRITES).flat().forEach(src => { const i = new Image(); i.src = src; });
 
 // Factory to make a PacMan at a random position with random velocity
 function makePac() {
   const game = document.getElementById('game');
 
-  // random velocity and starting position
-  const velocity = setToRandom(10);  // {x: ?, y: ?}
-  const position = setToRandom(200); // {x: ?, y: ?}
+  const velocity = setToRandom(10);   // movement per tick
+  const position = setToRandom(200);  // starting position
 
-  // create the image
   const newimg = document.createElement('img');
   newimg.style.position = 'absolute';
-  newimg.src = './images/PacMan1.png';
   newimg.width = 100;
 
-  // set initial position (must include 'px')
+  // initial direction & frame
+  const direction = velocity.x >= 0 ? 'right' : 'left';
+  const frame = 0;         // 0=open, 1=closed
+  const frameTick = 0;     // counter for when to swap frames
+  const frameEvery = 8;    // swap mouth every N ticks (tweak to taste)
+
+  // set initial img & position
+  newimg.src = SPRITES[direction][frame];
   newimg.style.left = position.x + 'px';
   newimg.style.top  = position.y + 'px';
 
-  // add to DOM
   game.appendChild(newimg);
 
-  // return the pacman object
-  return { position, velocity, newimg };
+  // return the pacman object (include animation state)
+  return { position, velocity, newimg, direction, frame, frameTick, frameEvery };
 }
 
 function update() {
@@ -38,15 +45,25 @@ function update() {
   const maxX = game.clientWidth;
   const maxY = game.clientHeight;
 
-  // loop over pacmen array and move each one
   pacMen.forEach((item) => {
     checkCollisions(item, maxX, maxY);
 
-    // move position
+    // Move
     item.position.x += item.velocity.x;
     item.position.y += item.velocity.y;
 
-    // sync DOM (include 'px')
+    // Update direction based on horizontal velocity
+    const newDirection = item.velocity.x >= 0 ? 'right' : 'left';
+    if (newDirection !== item.direction) item.direction = newDirection;
+
+    // Animate mouth every N ticks
+    item.frameTick = (item.frameTick + 1) % item.frameEvery;
+    if (item.frameTick === 0) {
+      item.frame = item.frame ^ 1; // toggle 0<->1
+      item.newimg.src = SPRITES[item.direction][item.frame];
+    }
+
+    // Sync DOM
     item.newimg.style.left = item.position.x + 'px';
     item.newimg.style.top  = item.position.y + 'px';
   });
@@ -55,7 +72,6 @@ function update() {
 }
 
 function checkCollisions(item, maxX, maxY) {
-  // bounds are the game box minus the image size
   const rightBound = maxX - item.newimg.width;
   const bottomBound = maxY - item.newimg.height;
 
@@ -75,7 +91,7 @@ function checkCollisions(item, maxX, maxY) {
 }
 
 function makeOne() {
-  pacMen.push(makePac()); // add a new PacMan
+  pacMen.push(makePac());
 }
 
 //don't change this line
